@@ -33,5 +33,5 @@
 
 /* Applied to result and error cards on mount */
 .card-enter {
-  animation: slide-up-fade 200ms ease-out forwards;
+  animation: slide-up-fade 300ms ease-out forwards;
 }

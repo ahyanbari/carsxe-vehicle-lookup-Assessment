@@ -190,6 +190,8 @@ export default function Home() {
   const [result, setResult] = useState<LookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [recentEntries, setRecentEntries] = useState<CacheEntry[]>([]);
+  // Incremented on every result (success or error) to force card remount and replay the animation
+  const [resultKey, setResultKey] = useState(0);
 
   // Load cached entries after mount — localStorage is unavailable during SSR
   useEffect(() => {
@@ -224,6 +226,7 @@ export default function Home() {
         const lookup = json as LookupResult;
         setResult(lookup);
         setStatus("done");
+        setResultKey((k) => k + 1);
         // Persist to cache and refresh pill list
         const value = input.trim().toUpperCase();
         const st = detected === "plate" ? state : undefined;
@@ -238,6 +241,7 @@ export default function Home() {
     } catch {
       setError("Request timed out. Check your connection.");
       setStatus("error");
+      setResultKey((k) => k + 1);
     }
   }
 
@@ -341,11 +345,11 @@ export default function Home() {
         )}
 
         {status === "loading" && <Skeleton />}
-        {status === "error" && error && <ErrorCard message={error} />}
+        {status === "error" && error && <ErrorCard key={resultKey} message={error} />}
         {status === "done" && result && (
           result.type === "vin"
-            ? <VinCard data={result.data} />
-            : <PlateCard data={result.data} />
+            ? <VinCard key={resultKey} data={result.data} />
+            : <PlateCard key={resultKey} data={result.data} />
         )}
       </div>
     </main>
