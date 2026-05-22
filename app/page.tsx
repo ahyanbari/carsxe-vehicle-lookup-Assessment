@@ -1,7 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { VinResult, PlateResult } from "@/lib/types";
+import {
+  getCacheEntries,
+  addCacheEntry,
+  makeCacheKey,
+  makeCacheLabel,
+  type CacheEntry,
+} from "@/lib/cache";
 
 // Mirrors lib/validation.ts — client-side detection for UX only; server re-validates on submit
 const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
@@ -182,6 +189,12 @@ export default function Home() {
   const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [result, setResult] = useState<LookupResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [recentEntries, setRecentEntries] = useState<CacheEntry[]>([]);
+
+  // Load cached entries after mount — localStorage is unavailable during SSR
+  useEffect(() => {
+    setRecentEntries(getCacheEntries());
+  }, []);
 
   const detected = input.trim() ? detectType(input) : null;
   const inputError = getInputError(input);
@@ -208,13 +221,39 @@ export default function Home() {
         setError(json.error ?? "Something went wrong.");
         setStatus("error");
       } else {
-        setResult(json as LookupResult);
+        const lookup = json as LookupResult;
+        setResult(lookup);
         setStatus("done");
+        // Persist to cache and refresh pill list
+        const value = input.trim().toUpperCase();
+        const st = detected === "plate" ? state : undefined;
+        addCacheEntry({
+          key: makeCacheKey(detected!, value, st),
+          label: makeCacheLabel(detected!, value, st),
+          result: lookup,
+          timestamp: Date.now(),
+        });
+        setRecentEntries(getCacheEntries());
       }
     } catch {
       setError("Request timed out. Check your connection.");
       setStatus("error");
     }
+  }
+
+  function handlePillClick(entry: CacheEntry) {
+    // Re-read cache at click time — entry may have gone stale since mount
+    const fresh = getCacheEntries();
+    setRecentEntries(fresh);
+    if (!fresh.find((e) => e.key === entry.key)) {
+      // Stale: pruned by getCacheEntries, don't show result
+      setResult(null);
+      setStatus("idle");
+      return;
+    }
+    setResult(entry.result);
+    setStatus("done");
+    setError(null);
   }
 
   return (
@@ -280,6 +319,20 @@ export default function Home() {
         >
           {status === "loading" ? "Looking up…" : "Look Up"}
         </button>
+
+        {recentEntries.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {recentEntries.map((entry) => (
+              <button
+                key={entry.key}
+                onClick={() => handlePillClick(entry)}
+                className="text-xs font-mono text-zinc-400 bg-zinc-800 hover:bg-zinc-700 hover:text-zinc-200 px-2.5 py-1 rounded-full transition-colors"
+              >
+                {entry.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {status === "loading" && <Skeleton />}
         {status === "error" && error && <ErrorCard message={error} />}

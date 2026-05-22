@@ -26,6 +26,13 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 6] — localStorage recent lookups cache
+
+- **`lib/cache.ts`:** All cache logic isolated here. `CacheEntry` interface stores key, label, result, timestamp. `getCacheEntries()` reads from localStorage, filters stale entries (> 1 hour), writes pruned list back. `addCacheEntry()` deduplicates by key, pushes to front, caps at 5. `makeCacheKey/Label()` helpers produce normalized keys (`VIN` or `PLATE·STATE`) and display labels (`VIN` or `PLATE · STATE`).
+- **`page.tsx` additions:** `recentEntries` state loaded via `useEffect` after mount (localStorage unavailable during SSR). After each successful API response, `addCacheEntry()` is called and pills refresh. `handlePillClick()` re-reads cache at click time to catch entries that went stale while the page was open — if the key is gone, pill disappears and result clears. Pills render as `rounded-full` chips below the submit button.
+- **Dedup behavior:** Submitting the same VIN twice moves it to the front — no duplicate pills.
+- **Stale-click behavior:** If a pill is clicked after 1 hour, `getCacheEntries()` prunes it; the pill disappears and the result area resets to idle — no result shown, no API call made.
+
 ## [Step 5] — Result card, loading skeleton, error card
 
 - **Result state typed:** Changed `result` from `unknown` to `LookupResult` discriminated union (`{ type: "vin"; data: VinResult } | { type: "plate"; data: PlateResult }`). TypeScript now narrows correctly in the render branch.
