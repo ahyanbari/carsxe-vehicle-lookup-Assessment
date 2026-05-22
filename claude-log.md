@@ -26,6 +26,13 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 4a] — Auto-detection bug fixes (iteration after browser testing)
+
+- **Bug 1 — Silent failure on invalid VIN:** Typing 17 chars that fail VIN_RE (e.g. `BADVIN12345678902` which contains `I`) caused the submit button to disable with no explanation. Fix: added `getInputError(raw)` which fires only at exactly 17 chars and returns the spec-mandated message "VIN must be 17 characters and cannot contain I, O, or Q." Inline error renders below the input; input border turns red.
+- **Bug 2 — My own Check 1 instruction was wrong:** I told the user "HELLO → no badge" in the test script, but HELLO is 5 alphanumeric chars, which correctly matches PLATE per the spec (1–8 alphanumeric → plate). The detection logic was right; my test instruction was wrong. Edge cases confirmed correct: empty → nothing, 1–8 alphanumeric → PLATE, 9–16 chars → neutral, 17 valid → VIN, 17 invalid → inline error.
+- **`canSubmit` updated:** Now also gates on `!inputError` so a 17-char invalid string can never be submitted.
+- **Visual:** Input border conditionally switches to `border-red-500` when `inputError` is set. Badge suppressed while error is active.
+
 ## [Step 3] — Wire route to real CarsXE API (2-call budget)
 
 - **Pre-flight Check 1:** Ran `node -e` to verify `CARSXE_API_KEY` is loaded from `.env.local` without starting the server. Result: `key present: true, length: 29`. Key confirmed readable by the Node process.
