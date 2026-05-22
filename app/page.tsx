@@ -53,7 +53,7 @@ const US_STATES: [string, string][] = [
 
 function VinCard({ data }: { data: VinResult }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-5">
+    <div className="card-enter bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-5">
       <div>
         <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-1">Vehicle</p>
         <h2 className="text-zinc-100 text-xl font-mono font-semibold">
@@ -116,7 +116,7 @@ function VinCard({ data }: { data: VinResult }) {
 
 function PlateCard({ data }: { data: PlateResult }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-5">
+    <div className="card-enter bg-zinc-900 border border-zinc-800 rounded-lg p-5 space-y-5">
       <div>
         <p className="text-zinc-500 text-xs font-mono uppercase tracking-widest mb-1">Vehicle</p>
         <h2 className="text-zinc-100 text-xl font-mono font-semibold">
@@ -177,7 +177,7 @@ function Skeleton() {
 
 function ErrorCard({ message }: { message: string }) {
   return (
-    <div className="bg-red-950/40 border border-red-900/60 rounded-lg px-4 py-3">
+    <div className="card-enter bg-red-950/40 border border-red-900/60 rounded-lg px-4 py-3">
       <p className="text-red-400 font-mono text-sm">{message}</p>
     </div>
   );
@@ -285,11 +285,11 @@ export default function Home() {
             className={`w-full bg-zinc-900 border rounded-md px-4 py-3 pr-20 text-zinc-100 font-mono text-sm placeholder:text-zinc-600 focus:outline-none transition-colors ${
               inputError
                 ? "border-red-500 focus:border-red-400"
-                : "border-zinc-700 focus:border-cyan-500"
+                : "border-zinc-700 focus:border-amber-500"
             }`}
           />
           {detected && !inputError && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
               {detected === "vin" ? "VIN" : "PLATE"}
             </span>
           )}
@@ -303,7 +303,7 @@ export default function Home() {
           <select
             value={state}
             onChange={(e) => setState(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 rounded-md px-4 py-3 text-zinc-100 font-mono text-sm focus:outline-none focus:border-cyan-500 transition-colors"
+            className="w-full bg-zinc-900 border border-zinc-700 rounded-md px-4 py-3 text-zinc-100 font-mono text-sm focus:outline-none focus:border-amber-500 transition-colors"
           >
             <option value="">Select state…</option>
             {US_STATES.map(([code, name]) => (
@@ -315,7 +315,13 @@ export default function Home() {
         <button
           onClick={submit}
           disabled={!canSubmit || status === "loading"}
-          className="w-full bg-cyan-500 hover:bg-cyan-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 font-mono font-semibold text-sm py-3 rounded-md transition-colors cursor-pointer disabled:cursor-not-allowed"
+          className={`w-full font-mono font-semibold text-sm py-3 rounded-md ${
+            status === "loading"
+              ? "btn-shimmer cursor-not-allowed"
+              : canSubmit
+                ? "bg-amber-500 hover:bg-amber-400 text-zinc-950 cursor-pointer transition-colors"
+                : "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+          }`}
         >
           {status === "loading" ? "Looking up…" : "Look Up"}
         </button>

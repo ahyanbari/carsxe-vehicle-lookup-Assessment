@@ -26,6 +26,15 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 7] — Visual polish: amber accent + two submit-moment animations
+
+- **Accent color:** Cyan (#22d3ee) replaced with amber (#f59e0b / Tailwind `amber-500`) everywhere — submit button, VIN/PLATE detection badge, input and select focus borders. `--accent` CSS variable updated in globals.css. Error state stays red; zinc greys unchanged.
+- **Why amber:** Warm, confident, and high-contrast on `zinc-950` dark background. Cyan read as "system/technical"; amber reads as "action/result" — more appropriate for a lookup tool that surfaces real data.
+- **Animation 1 — button shimmer:** Pure CSS `@keyframes shimmer` with a `linear-gradient` (amber → light amber → near-white → light amber → amber) animated across `background-position` over 1.2s infinite. Applied via `.btn-shimmer` class only when `status === "loading"`. Shimmer stops the instant the response comes back because the class is removed. Implemented without a transition so it starts immediately.
+- **Animation 2 — card slide-up/fade-in:** `@keyframes slide-up-fade` — `opacity: 0, translateY(8px)` to `opacity: 1, translateY(0)` over 200ms `ease-out`. Applied via `.card-enter` class on the root div of VinCard, PlateCard, and ErrorCard. Triggers on DOM mount, which happens whenever the card appears (status transitions from loading/idle → done/error re-mounts the component).
+- **Why exactly these two:** Both are tied to the submit moment — the shimmer signals "waiting," the card entrance signals "arrived." Every other interaction (pill clicks, typing, state select) is instantaneous and gets no animation. Adding more would dilute the meaning of motion.
+- **Why restraint:** The brief asks for "one distinctive design choice." Overusing animation is the opposite of distinctive — it's noise. Two purposeful moments carry more weight than five decorative ones.
+
 ## [Step 6] — localStorage recent lookups cache
 
 - **`lib/cache.ts`:** All cache logic isolated here. `CacheEntry` interface stores key, label, result, timestamp. `getCacheEntries()` reads from localStorage, filters stale entries (> 1 hour), writes pruned list back. `addCacheEntry()` deduplicates by key, pushes to front, caps at 5. `makeCacheKey/Label()` helpers produce normalized keys (`VIN` or `PLATE·STATE`) and display labels (`VIN` or `PLATE · STATE`).
