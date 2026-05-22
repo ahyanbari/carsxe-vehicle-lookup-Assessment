@@ -26,6 +26,16 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 5] — Result card, loading skeleton, error card
+
+- **Result state typed:** Changed `result` from `unknown` to `LookupResult` discriminated union (`{ type: "vin"; data: VinResult } | { type: "plate"; data: PlateResult }`). TypeScript now narrows correctly in the render branch.
+- **`VinCard`:** Header shows year/make/model prominently, trim + style as subtitle. 2-col grid for 10 spec fields. Separate MPG row (city / highway side by side). Exterior colors as pill chips. VIN at bottom in monospace with wide tracking.
+- **`PlateCard`:** Same header pattern. 2-col grid for 8 fields. VIN at bottom.
+- **Empty field handling:** Module-level `f(v)` helper — returns `"—"` for empty strings. Applied to every rendered field.
+- **`Skeleton`:** `animate-pulse` Tailwind utility on grey `bg-zinc-800` blocks matching the rough card shape (header block, 8-field grid, VIN row). Replaces the old button spinner.
+- **`ErrorCard`:** `bg-red-950/40 border-red-900/60` — muted red, distinct from success card, less visually dominant than an alert.
+- **Step 7 note:** Amber accent and animations not yet applied — current build still uses cyan.
+
 ## [Step 4a] — Auto-detection bug fixes (iteration after browser testing)
 
 - **Bug 1 — Silent failure on invalid VIN:** Typing 17 chars that fail VIN_RE (e.g. `BADVIN12345678902` which contains `I`) caused the submit button to disable with no explanation. Fix: added `getInputError(raw)` which fires only at exactly 17 chars and returns the spec-mandated message "VIN must be 17 characters and cannot contain I, O, or Q." Inline error renders below the input; input border turns red.
