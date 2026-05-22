@@ -26,3 +26,17 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 3] — Wire route to real CarsXE API (2-call budget)
+
+- **Pre-flight Check 1:** Ran `node -e` to verify `CARSXE_API_KEY` is loaded from `.env.local` without starting the server. Result: `key present: true, length: 29`. Key confirmed readable by the Node process.
+- **Pre-flight Check 2:** Added a temporary redacted `console.log` inside `lookupVin` — printed the full URL with `[REDACTED:29 chars]` in place of the key. Confirmed key length matches Check 1, VIN is uppercased, URL structure matches the CarsXE spec. Log line removed before committing — we never ship debug lines that reference secrets, even redacted ones.
+- **Real API calls made (2 total):**
+  - VIN `WBAFR7C57CC811956` → HTTP 200, real BMW 5-Series data returned. Fields matched mock except `type` and `fuel_type` were empty strings — real API behavior, not a bug.
+  - Plate `7XER187 CA` → HTTP 200, real Kia Forte LX data returned. All fields populated.
+- **Empty-field observation:** Real CarsXE responses can return empty strings for optional fields (e.g. `type`, `fuel_type`). Mock data had these populated. Frontend (Step 5) must handle empty strings gracefully — never render a blank label.
+- **`USE_MOCK` restored to `true`** immediately after the 2 calls. Comment updated to explain it stays `true` for the entire build until final demo.
+- **Security decision — redacted preflight logging:** When verifying the request URL is built correctly before flipping `USE_MOCK = false`, never log the full URL with the API key in it — not even as a temporary debug line. Use a redacted pattern instead:
+  ```ts
+  "[REDACTED:" + (process.env.CARSXE_API_KEY?.length ?? 0) + " chars]"
+  ```
+  This confirms the key is present and the correct length without ever printing the value. Logging secrets to the terminal, even locally and temporarily, normalizes a habit that causes credential leaks in production.

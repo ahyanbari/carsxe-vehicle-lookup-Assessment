@@ -1,6 +1,7 @@
 import type { VinResult, PlateResult } from "./types";
 
-// Flip to false in Step 3 when ready to spend sandbox credits
+// Default: true for the entire build — only flip to false for the final demo run.
+// 100 lifetime sandbox calls total; real calls verified in Step 3, mock protects the remainder.
 const USE_MOCK = true;
 
 const NOT_FOUND_CODES = new Set(["invalid_vin", "no_data", "invalid_inputs"]);
