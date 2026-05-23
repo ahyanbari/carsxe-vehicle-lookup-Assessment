@@ -26,6 +26,13 @@
   - VIN `WBAFR7C57CC811956` → HTTP 200, full curated BMW 5-Series fields returned.
   - Plate `7XER187 CA` → HTTP 200, full curated Kia Forte fields returned.
   - Bad VIN `BADVIN` → HTTP 400, message: "VIN must be 17 characters and cannot contain I, O, or Q."
+## [Step 8] — Final pass: cleanup, security verification, README, conversation export
+
+- **Code cleanup:** ESLint returned zero warnings across all files. No console.log statements, no dead code, no leftover placeholders. USE_MOCK confirmed true. Codebase was already clean from disciplined incremental builds.
+- **Security verification (DevTools):** Confirmed CARSXE_API_KEY never appears in browser traffic. Payload tab shows only `{"type":"vin","value":"..."}`. Response tab shows only curated vehicle fields. No raw CarsXE `input.key` field returned. Headers show no auth material sent from browser. The server-side proxy pattern enforces this at the architecture level.
+- **README:** Replaced Next.js boilerplate with full project README — what it does, how to run it, tech stack rationale, architecture file map, security model, reflection section (filled in by the candidate), AI Collaboration section.
+- **Conversation export:** Generated claude-code-log.md (full session log for reviewers). Added to .gitignore alongside claude-ai-export* patterns — sent to evaluators directly, not public.
+
 ## [Step 7] — Visual polish: amber accent + two submit-moment animations
 
 - **Accent color:** Cyan (#22d3ee) replaced with amber (#f59e0b / Tailwind `amber-500`) everywhere — submit button, VIN/PLATE detection badge, input and select focus borders. `--accent` CSS variable updated in globals.css. Error state stays red; zinc greys unchanged.

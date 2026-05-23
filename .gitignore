@@ -39,6 +39,12 @@ next-env.d.ts
 # Claude Code session data
 .claude/
 
+# Assessment conversation exports — sent to reviewers directly, not public
+claude-code-log.md
+claude-ai-export*.md
+claude-ai-export*.html
+
+
 # Environment files (belt and suspenders — block all .env variants)
 .env
 .env.local
